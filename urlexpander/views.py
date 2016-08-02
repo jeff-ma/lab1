@@ -14,6 +14,6 @@ def index(request):
         html = html + '<div><b>Page title</b> - ' + url.page_title + ' <br/><b>Short URL</b> - ' + url.short_url + ' <br/><b>Full or long URL</b> - ' + url.full_url + '</div><br>'
     return HttpResponse(html)
 
-def post_url(request):
-    if request.method == "POST":
-    #    form = 
+#def post_url(request):
+#    if request.method == "POST":
+#
