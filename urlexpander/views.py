@@ -1,19 +1,29 @@
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.utils import timezone
 from .models import Url_Address
 from django.shortcuts import render, get_object_or_404
-from django.shortcuts import redirect
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
 
 # Create your views here.
 
 def index(request):
-    all_urls = Url_Address.objects.all()
-    html = '<h1>Welcome to the URL expander</h1>'
-    for url in all_urls:
-        html = html + '<div><b>Page title</b> - ' + url.page_title + ' <br/><b>Short URL</b> - ' + url.short_url + ' <br/><b>Full or long URL</b> - ' + url.full_url + '</div><br>'
-    return HttpResponse(html)
+    url_list = Url_Address.objects.all()
+    return render(request, 'urlexpander/index.html', {'url_list' : url_list})
 
-#def post_url(request):
-#    if request.method == "POST":
-#
+def expand(request):
+	shorter_url = request.POST['shorter_url']
+	html = urlopen(shorter_url)
+	soup = BeautifulSoup(html, 'html.parser')
+	url = Url_Address()
+	url.short_url = shorter_url
+	url.full_url = html.geturl()
+	url.http_status = html.getcode()
+	url.page_title = soup.html.head.title.contents[0]
+	url.save()
+	url_list = Url_Address.objects.all()
+	return render(request, 'urlexpander/index.html', {'url_list' : url_list})
+
+def delete(request, url_pk):
+	url = get_object_or_404(Url_Address, pk=url_pk)
+	url.delete()
+	url_list = Url_Address.objects.all()
+	return render(request, 'urlexpander/index.html', {'url_list' : url_list})
